@@ -32,11 +32,14 @@ add_library(pg_query STATIC
   src/postgres/src_backend_nodes_nodeFuncs.c
   src/postgres/src_backend_nodes_value.c
   src/postgres/src_backend_parser_gram.c
+  src/postgres/src_backend_parser_parse_target.c
   src/postgres/src_backend_parser_parser.c
   src/postgres/src_backend_parser_scan.c
   src/postgres/src_backend_parser_scansup.c
   src/postgres/src_backend_storage_ipc_ipc.c
+  src/postgres/src_backend_tcop_cmdtag.c
   src/postgres/src_backend_tcop_postgres.c
+  src/postgres/src_backend_tcop_utility.c
   src/postgres/src_backend_utils_activity_pgstat_database.c
   src/postgres/src_backend_utils_adt_datum.c
   src/postgres/src_backend_utils_adt_expandeddatum.c
