@@ -113,7 +113,8 @@ extern MemoryContext AllocSetContextCreateInternal(MemoryContext parent,
 												   const char *name,
 												   Size minContextSize,
 												   Size initBlockSize,
-												   Size maxBlockSize);
+												   Size maxBlockSize,
+												   bool enableFreeListIndex);
 extern void AllocSetDeleteFreeList(MemoryContext context);
 
 /*
@@ -125,10 +126,10 @@ extern void AllocSetDeleteFreeList(MemoryContext context);
 #define AllocSetContextCreate(parent, name, ...) \
 	(StaticAssertExpr(__builtin_constant_p(name), \
 					  "memory context names must be constant strings"), \
-	 AllocSetContextCreateInternal(parent, name, __VA_ARGS__))
+	 AllocSetContextCreateInternal(parent, name, __VA_ARGS__, true))
 #else
-#define AllocSetContextCreate \
-	AllocSetContextCreateInternal
+#define AllocSetContextCreate(...) \
+	AllocSetContextCreateInternal(__VA_ARGS__, true)
 #endif
 
 /* slab.c */

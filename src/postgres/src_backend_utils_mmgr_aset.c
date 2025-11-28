@@ -371,7 +371,8 @@ AllocSetContextCreateInternal(MemoryContext parent,
 							  const char *name,
 							  Size minContextSize,
 							  Size initBlockSize,
-							  Size maxBlockSize)
+							  Size maxBlockSize,
+							  bool enableFreeListIndex)
 {
 	int			freeListIndex;
 	Size		firstBlockSize;
@@ -437,6 +438,7 @@ AllocSetContextCreateInternal(MemoryContext parent,
 
 			/* Update its maxBlockSize; everything else should be OK */
 			set->maxBlockSize = maxBlockSize;
+			set->freeListIndex = enableFreeListIndex ? freeListIndex : -1;
 
 			/* Reinitialize its header, installing correct name and parent */
 			MemoryContextCreate((MemoryContext) set,
@@ -501,7 +503,7 @@ AllocSetContextCreateInternal(MemoryContext parent,
 	set->initBlockSize = (uint32) initBlockSize;
 	set->maxBlockSize = (uint32) maxBlockSize;
 	set->nextBlockSize = (uint32) initBlockSize;
-	set->freeListIndex = freeListIndex;
+	set->freeListIndex = enableFreeListIndex ? freeListIndex : -1;
 
 	/*
 	 * Compute the allocation chunk size limit for this context.  It can't be
