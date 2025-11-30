@@ -1,11 +1,3 @@
-/*--------------------------------------------------------------------
- * Symbols referenced in this file:
- * - pg_strcasecmp
- * - pg_toupper
- * - pg_strncasecmp
- *--------------------------------------------------------------------
- */
-
 /*-------------------------------------------------------------------------
  *
  * pgstrcasecmp.c
@@ -26,7 +18,7 @@
  * C library thinks the locale is.
  *
  *
- * Portions Copyright (c) 1996-2024, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2025, PostgreSQL Global Development Group
  *
  * src/port/pgstrcasecmp.c
  *
@@ -126,14 +118,34 @@ pg_toupper(unsigned char ch)
  * that aren't upper case letters.  Note however that the whole thing is
  * a bit bogus for multibyte character sets.
  */
-
+unsigned char
+pg_tolower(unsigned char ch)
+{
+	if (ch >= 'A' && ch <= 'Z')
+		ch += 'a' - 'A';
+	else if (IS_HIGHBIT_SET(ch) && isupper(ch))
+		ch = tolower(ch);
+	return ch;
+}
 
 /*
  * Fold a character to upper case, following C/POSIX locale rules.
  */
-
+unsigned char
+pg_ascii_toupper(unsigned char ch)
+{
+	if (ch >= 'a' && ch <= 'z')
+		ch += 'A' - 'a';
+	return ch;
+}
 
 /*
  * Fold a character to lower case, following C/POSIX locale rules.
  */
-
+unsigned char
+pg_ascii_tolower(unsigned char ch)
+{
+	if (ch >= 'A' && ch <= 'Z')
+		ch += 'a' - 'A';
+	return ch;
+}

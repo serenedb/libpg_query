@@ -73,8 +73,27 @@ decimalLength64(const uint64 v)
 	return t + (v >= PowersOfTen[t]);
 }
 
+/*
+ * Adapted from http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
+ */
+static inline int
+decimalLength32(const uint32 v)
+{
+	int			t;
+	static const uint32 PowersOfTen[] = {
+		1, 10, 100,
+		1000, 10000, 100000,
+		1000000, 10000000, 100000000,
+		1000000000
+	};
 
-
+	/*
+	 * Compute base-10 logarithm by dividing the base-2 logarithm by a
+	 * good-enough approximation of the base-2 logarithm of 10
+	 */
+	t = (pg_leftmost_one_pos32(v) + 1) * 1233 / 4096;
+	return t + (v >= PowersOfTen[t]);
+}
 
 static const int8 hexlookup[128] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -603,4 +622,138 @@ pg_ulltoa_n(uint64 value, char *a)
 		*a = (char) ('0' + value2);
 
 	return olength;
+}
+
+/*
+ * pg_ultoa_n: converts an unsigned 32-bit integer to its string representation,
+ * not NUL-terminated, and returns the length of that string representation
+ *
+ * Caller must ensure that 'a' points to enough memory to hold the result (at
+ * least 10 bytes)
+ */
+int
+pg_ultoa_n(uint32 value, char *a)
+{
+	int			olength,
+				i = 0;
+
+	/* Degenerate case */
+	if (value == 0)
+	{
+		*a = '0';
+		return 1;
+	}
+
+	olength = decimalLength32(value);
+
+	/* Compute the result string. */
+	while (value >= 10000)
+	{
+		const uint32 c = value - 10000 * (value / 10000);
+		const uint32 c0 = (c % 100) << 1;
+		const uint32 c1 = (c / 100) << 1;
+
+		char	   *pos = a + olength - i;
+
+		value /= 10000;
+
+		memcpy(pos - 2, DIGIT_TABLE + c0, 2);
+		memcpy(pos - 4, DIGIT_TABLE + c1, 2);
+		i += 4;
+	}
+	if (value >= 100)
+	{
+		const uint32 c = (value % 100) << 1;
+
+		char	   *pos = a + olength - i;
+
+		value /= 100;
+
+		memcpy(pos - 2, DIGIT_TABLE + c, 2);
+		i += 2;
+	}
+	if (value >= 10)
+	{
+		const uint32 c = value << 1;
+
+		char	   *pos = a + olength - i;
+
+		memcpy(pos - 2, DIGIT_TABLE + c, 2);
+	}
+	else
+	{
+		*a = (char) ('0' + value);
+	}
+
+	return olength;
+}
+
+/*
+ * pg_ultostr_zeropad
+ *		Converts 'value' into a decimal string representation stored at 'str'.
+ *		'minwidth' specifies the minimum width of the result; any extra space
+ *		is filled up by prefixing the number with zeros.
+ *
+ * Returns the ending address of the string result (the last character written
+ * plus 1).  Note that no NUL terminator is written.
+ *
+ * The intended use-case for this function is to build strings that contain
+ * multiple individual numbers, for example:
+ *
+ *	str = pg_ultostr_zeropad(str, hours, 2);
+ *	*str++ = ':';
+ *	str = pg_ultostr_zeropad(str, mins, 2);
+ *	*str++ = ':';
+ *	str = pg_ultostr_zeropad(str, secs, 2);
+ *	*str = '\0';
+ *
+ * Note: Caller must ensure that 'str' points to enough memory to hold the
+ * result.
+ */
+char *
+pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth)
+{
+	int			len;
+
+	Assert(minwidth > 0);
+
+	if (value < 100 && minwidth == 2)	/* Short cut for common case */
+	{
+		memcpy(str, DIGIT_TABLE + value * 2, 2);
+		return str + 2;
+	}
+
+	len = pg_ultoa_n(value, str);
+	if (len >= minwidth)
+		return str + len;
+
+	memmove(str + minwidth - len, str, len);
+	memset(str, '0', minwidth - len);
+	return str + minwidth;
+}
+
+/*
+ * pg_ultostr
+ *		Converts 'value' into a decimal string representation stored at 'str'.
+ *
+ * Returns the ending address of the string result (the last character written
+ * plus 1).  Note that no NUL terminator is written.
+ *
+ * The intended use-case for this function is to build strings that contain
+ * multiple individual numbers, for example:
+ *
+ *	str = pg_ultostr(str, a);
+ *	*str++ = ' ';
+ *	str = pg_ultostr(str, b);
+ *	*str = '\0';
+ *
+ * Note: Caller must ensure that 'str' points to enough memory to hold the
+ * result.
+ */
+char *
+pg_ultostr(char *str, uint32 value)
+{
+	int			len = pg_ultoa_n(value, str);
+
+	return str + len;
 }

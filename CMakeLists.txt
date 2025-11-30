@@ -44,8 +44,10 @@ add_library(pg_query STATIC
   src/postgres/src_backend_utils_adt_datum.c
   src/postgres/src_backend_utils_adt_expandeddatum.c
   src/postgres/src_backend_utils_adt_format_type.c
+  src/postgres/src_backend_utils_adt_datetime.c
   src/postgres/src_backend_utils_adt_numutils.c
   src/postgres/src_backend_utils_adt_ruleutils.c
+  src/postgres/src_backend_utils_adt_timestamp.c
   src/postgres/src_backend_utils_error_assert.c
   src/postgres/src_backend_utils_error_elog.c
   src/postgres/src_backend_utils_fmgr_fmgr.c
@@ -64,6 +66,7 @@ add_library(pg_query STATIC
   src/postgres/src_common_kwlookup.c
   src/postgres/src_common_psprintf.c
   src/postgres/src_common_stringinfo.c
+  src/postgres/src_common_string.c
   src/postgres/src_common_wchar.c
   src/postgres/src_pl_plpgsql_src_pl_comp.c
   src/postgres/src_pl_plpgsql_src_pl_funcs.c
