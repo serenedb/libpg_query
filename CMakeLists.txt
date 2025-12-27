@@ -1,4 +1,3 @@
-
 add_library(pg_query STATIC 
 # src
   src/pg_query_deparse.c
@@ -44,7 +43,7 @@ add_library(pg_query STATIC
   src/postgres/src_backend_utils_adt_datum.c
   src/postgres/src_backend_utils_adt_expandeddatum.c
   src/postgres/src_backend_utils_adt_format_type.c
-  src/postgres/src_backend_utils_adt_datetime.c
+  src/postgres/src_backend_utils_adt_datetime.cpp
   src/postgres/src_backend_utils_adt_numutils.c
   src/postgres/src_backend_utils_adt_ruleutils.c
   src/postgres/src_backend_utils_adt_timestamp.c

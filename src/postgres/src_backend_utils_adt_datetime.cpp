@@ -12,6 +12,8 @@
  *
  *-------------------------------------------------------------------------
  */
+extern "C" {
+
 #include "postgres.h"
 
 #include <ctype.h>
@@ -34,6 +36,7 @@
 #include "utils/tzparser.h"
 #include "pgtime.h"
 
+}
 
 static int	DecodeNumber(int flen, char *str, bool haveTextMonth,
 						 int fmask, int *tmask,
@@ -253,25 +256,25 @@ static const datetkn deltatktbl[] = {
 
 static const int szdeltatktbl = sizeof deltatktbl / sizeof deltatktbl[0];
 
-static TimeZoneAbbrevTable *zoneabbrevtbl = NULL;
+// static TimeZoneAbbrevTable *zoneabbrevtbl = NULL;
 
 /* Caches of recent lookup results in the above tables */
 
-static const datetkn *datecache[MAXDATEFIELDS] = {NULL};
+static thread_local const datetkn *datecache[MAXDATEFIELDS] = {NULL};
 
-static const datetkn *deltacache[MAXDATEFIELDS] = {NULL};
+static thread_local const datetkn *deltacache[MAXDATEFIELDS] = {NULL};
 
 /* Cache for results of timezone abbreviation lookups */
 
-typedef struct TzAbbrevCache
-{
-	char		abbrev[TOKMAXLEN + 1];	/* always NUL-terminated */
-	char		ftype;			/* TZ, DTZ, or DYNTZ */
-	int			offset;			/* GMT offset, if fixed-offset */
-	pg_tz	   *tz;				/* relevant zone, if variable-offset */
-} TzAbbrevCache;
-
-static TzAbbrevCache tzabbrevcache[MAXDATEFIELDS];
+// typedef struct TzAbbrevCache
+// {
+// 	char		abbrev[TOKMAXLEN + 1];	/* always NUL-terminated */
+// 	char		ftype;			/* TZ, DTZ, or DYNTZ */
+// 	int			offset;			/* GMT offset, if fixed-offset */
+// 	pg_tz	   *tz;				/* relevant zone, if variable-offset */
+// } TzAbbrevCache;
+// 
+// static TzAbbrevCache tzabbrevcache[MAXDATEFIELDS];
 
 
 /*
@@ -3222,15 +3225,15 @@ DecodeTimeForInterval(char *str, int fmask, int range,
 // 	return 0;
 // }
 
-/*
- * Reset tzabbrevcache after a change in session_timezone.
- */
-void
-ClearTimeZoneAbbrevCache(void)
-{
-	memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
-}
-
+// /*
+//  * Reset tzabbrevcache after a change in session_timezone.
+//  */
+// void
+// ClearTimeZoneAbbrevCache(void)
+// {
+// 	memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
+// }
+// 
 
 /* DecodeSpecial()
  * Decode text string using lookup table.
@@ -5072,18 +5075,18 @@ EncodeInterval(struct pg_itm *itm, int style, char *str)
 // 	return tbl;
 // }
 
-/*
- * Install a TimeZoneAbbrevTable as the active table.
- *
- * Caller is responsible that the passed table doesn't go away while in use.
- */
-void
-InstallTimeZoneAbbrevs(TimeZoneAbbrevTable *tbl)
-{
-	zoneabbrevtbl = tbl;
-	/* reset tzabbrevcache, which may contain results from old table */
-	memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
-}
+// /*
+//  * Install a TimeZoneAbbrevTable as the active table.
+//  *
+//  * Caller is responsible that the passed table doesn't go away while in use.
+//  */
+// void
+// InstallTimeZoneAbbrevs(TimeZoneAbbrevTable *tbl)
+// {
+// 	zoneabbrevtbl = tbl;
+// 	/* reset tzabbrevcache, which may contain results from old table */
+// 	memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
+// }
 
 /*
  * Helper subroutine to locate pg_tz timezone for a dynamic abbreviation.
