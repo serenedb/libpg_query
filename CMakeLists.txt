@@ -90,3 +90,7 @@ target_include_directories(pg_query
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/postgres/include
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor
 )
+
+target_compile_options(pg_query
+  PRIVATE -Wno-unused-function
+)
